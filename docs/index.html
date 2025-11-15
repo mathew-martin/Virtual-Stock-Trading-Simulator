@@ -216,13 +216,16 @@
                   <p>Compare weekly ROI against a benchmark.</p>
                 </div>
               </header>
-              <div class="split">
-                <canvas
-                  id="performanceChart"
-                  width="640"
-                  height="320"
-                  aria-label="Performance chart"
-                ></canvas>
+              <div class="split analytics-layout">
+                <article class="card analytics-chart">
+                  <h3>Performance trend</h3>
+                  <canvas
+                    id="performanceChart"
+                    width="640"
+                    height="320"
+                    aria-label="Performance chart"
+                  ></canvas>
+                </article>
                 <article class="card">
                   <h3>Insights</h3>
                   <ul class="list" data-insights></ul>
