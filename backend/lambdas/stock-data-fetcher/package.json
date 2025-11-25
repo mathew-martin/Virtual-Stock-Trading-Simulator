@@ -1,0 +1,27 @@
+{
+  "name": "stock-data-fetcher",
+  "version": "1.0.0",
+  "description": "AWS Lambda function to fetch real-time stock prices from Alpha Vantage and cache in DynamoDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "stock",
+    "trading",
+    "alpha-vantage",
+    "dynamodb"
+  ],
+  "author": "Virtual Stock Trading Team",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1691.0",
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

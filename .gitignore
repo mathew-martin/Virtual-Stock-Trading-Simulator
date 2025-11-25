@@ -1,1 +1,38 @@
 High-Level Architecture Overview.pdf
+
+# Node.js dependencies
+node_modules/
+package-lock.json
+
+# AWS SAM build artifacts
+.aws-sam/
+samconfig.toml
+
+# Environment variables (contains API keys - NEVER commit these!)
+.env
+.env.local
+.env.*.local
+
+# AWS credentials (NEVER commit these!)
+.aws/
+credentials
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+
+# Build artifacts
+dist/
+build/

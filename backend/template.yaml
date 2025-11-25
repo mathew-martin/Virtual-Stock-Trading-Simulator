@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Stock Data Fetcher Lambda Function
+
+  This template deploys ONLY the Lambda function.
+  DynamoDB table is created by teammate.
+  API Gateway is configured by Matthew.
+
+# Global configuration for all functions
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 10
+    MemorySize: 128
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        # Cache configuration (5 minutes to stay well within API limits)
+        CACHE_TTL: 300
+        # DynamoDB table name - UPDATE THIS to match what your teammate creates
+        CACHE_TABLE_NAME: stock-prices-cache
+
+# Parameters that will be prompted during deployment
+Parameters:
+  AlphaVantageApiKey:
+    Type: String
+    NoEcho: true
+    Description: >
+      Your Alpha Vantage API key. Get one free at https://www.alphavantage.co/support/#api-key
+      Free tier: 5 calls/minute, 500 calls/day
+
+  DynamoDBTableName:
+    Type: String
+    Default: stock-prices-cache
+    Description: >
+      Name of the DynamoDB table created by your teammate.
+      Must match the table name they provide.
+
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Deployment environment (dev or prod)
+
+# Resources to create
+Resources:
+  # Lambda Function - Stock Data Fetcher
+  StockDataFetcherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      # Function naming
+      FunctionName: !Sub stock-data-fetcher-${Environment}
+      Description: Fetches real-time stock prices from Alpha Vantage and caches in DynamoDB
+
+      # Code location
+      CodeUri: lambdas/stock-data-fetcher/
+      Handler: index.handler
+
+      # Environment-specific variables
+      Environment:
+        Variables:
+          ALPHA_VANTAGE_API_KEY: !Ref AlphaVantageApiKey
+          CACHE_TABLE_NAME: !Ref DynamoDBTableName
+          ENVIRONMENT: !Ref Environment
+
+      # IAM permissions - Lambda needs to access DynamoDB
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDBTableName
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/stock-data-fetcher-${Environment}:*
+
+      # CloudWatch Logs configuration
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Sub /aws/lambda/stock-data-fetcher-${Environment}
+
+      # Tags for resource organization
+      Tags:
+        Project: VirtualStockTrading
+        Component: StockDataFetcher
+        ManagedBy: SAM
+        Owner: Neil
+        Environment: !Ref Environment
+
+# Outputs - Share these with your teammates
+Outputs:
+  StockDataFetcherFunctionArn:
+    Description: "Lambda Function ARN - Share this with Matthew for API Gateway integration"
+    Value: !GetAtt StockDataFetcherFunction.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-FunctionArn
+
+  StockDataFetcherFunctionName:
+    Description: "Lambda Function Name - Use this to test and monitor the function"
+    Value: !Ref StockDataFetcherFunction
+    Export:
+      Name: !Sub ${AWS::StackName}-FunctionName
+
+  StockDataFetcherRoleArn:
+    Description: "Lambda IAM Role ARN - May be needed for permissions troubleshooting"
+    Value: !GetAtt StockDataFetcherFunctionRole.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-RoleArn
+
+  DynamoDBTableNameUsed:
+    Description: "DynamoDB table name the Lambda expects - Confirm this with teammate"
+    Value: !Ref DynamoDBTableName
+
+  DeploymentInstructions:
+    Description: "Next steps after deployment"
+    Value: >
+      1. Share the Lambda ARN with Matthew for API Gateway integration.
+      2. Confirm DynamoDB table name with teammate matches what Lambda expects.
+      3. Test the Lambda function using AWS Console or SAM CLI.
+      4. Monitor CloudWatch Logs for any errors.

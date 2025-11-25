@@ -1,0 +1,11 @@
+{
+  "version": "0",
+  "id": "test-scheduled-event",
+  "detail-type": "Scheduled Event",
+  "source": "aws.events",
+  "time": "2024-01-15T10:30:00Z",
+  "region": "us-east-1",
+  "resources": [],
+  "detail": {},
+  "symbols": ["AAPL", "MSFT", "AMZN", "NVDA", "TSLA", "META", "GOOGL"]
+}

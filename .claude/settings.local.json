@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(aws iam list-role-policies:*)",
+      "Bash(aws dynamodb list-tables:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

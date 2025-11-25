@@ -1,0 +1,14 @@
+{
+  "resource": "/stock/quotes",
+  "path": "/stock/quotes",
+  "httpMethod": "GET",
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json"
+  },
+  "queryStringParameters": {
+    "symbols": "AAPL,MSFT,TSLA"
+  },
+  "body": null,
+  "isBase64Encoded": false
+}
