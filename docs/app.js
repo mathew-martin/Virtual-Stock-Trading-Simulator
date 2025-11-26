@@ -41,8 +41,8 @@ const state = {
 const stockCache = new Map();
 const newsCache = { items: [], timestamp: 0 };
 const latestQuotes = {};
-// Keep quotes fresh; re-hit API after 15s
-const CACHE_TTL = 15_000;
+// Keep quotes fresh; re-hit API after 30s (balances freshness with rate limits)
+const CACHE_TTL = 30_000;
 
 const selectors = {
   holdingsBody: document.querySelector("[data-holdings]"),
