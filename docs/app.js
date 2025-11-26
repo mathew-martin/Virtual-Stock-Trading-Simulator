@@ -1,3 +1,13 @@
+// ============================================
+// API CONFIGURATION
+// ============================================
+// API Gateway endpoint for stock data
+// Format: https://YOUR-API-ID.execute-api.us-east-1.amazonaws.com/dev/stock/{symbol}
+const API_BASE_URL = "https://gqc6b15bmb.execute-api.us-east-1.amazonaws.com/dev/stock";
+
+// Set to true to use real API, false to use mock data
+const USE_REAL_API = true; // Using real API with Lambda backend
+
 const holdings = [
   { symbol: "AAPL", shares: 25, avgPrice: 182.15, stopLoss: 170 },
   { symbol: "MSFT", shares: 15, avgPrice: 329.2, stopLoss: 305 },
@@ -78,6 +88,45 @@ function mockApi(payloadFn, latency = 600) {
   });
 }
 
+// Fetch real stock data from Lambda via API Gateway
+async function fetchQuoteFromAPI(symbol) {
+  try {
+    // API Gateway route: GET /stock/{symbol}
+    const url = `${API_BASE_URL}/${symbol}`;
+    console.log(`Fetching real data from: ${url}`);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log(`API response for ${symbol}:`, data);
+
+    // Lambda returns: { symbol: "AAPL", quote: {...}, cached: true/false }
+    if (!data.quote) {
+      throw new Error("No quote data returned from API");
+    }
+
+    const quote = data.quote;
+
+    // Return in the format expected by the frontend
+    return {
+      symbol: quote.symbol,
+      price: quote.price,
+      change: quote.change,
+      changePct: quote.changePct,
+      cached: quote.cached, // Track if data came from cache
+    };
+  } catch (error) {
+    console.error(`Error fetching real quote for ${symbol}:`, error);
+    // Fall back to mock data if API fails
+    console.warn(`Falling back to mock data for ${symbol}`);
+    return null;
+  }
+}
+
 async function fetchQuote(symbol) {
   const now = Date.now();
   const cached = stockCache.get(symbol);
@@ -85,19 +134,45 @@ async function fetchQuote(symbol) {
     return cached.value;
   }
 
-  const base = BASE_QUOTES[symbol] ?? 100;
-  const previous = cached?.value.price ?? base;
-  const drift = 1 + (Math.random() - 0.5) * 0.02;
+  let response;
 
-  const response = await mockApi(() => {
-    const price = +(base * drift).toFixed(2);
-    return {
-      symbol,
-      price,
-      change: +(price - previous).toFixed(2),
-      changePct: +(((price - previous) / previous) * 100).toFixed(2),
-    };
-  });
+  if (USE_REAL_API) {
+    // Use real API from Lambda
+    response = await fetchQuoteFromAPI(symbol);
+
+    // If API failed, fall back to mock data
+    if (!response) {
+      console.log(`Using mock data fallback for ${symbol}`);
+      const base = BASE_QUOTES[symbol] ?? 100;
+      const previous = cached?.value.price ?? base;
+      const drift = 1 + (Math.random() - 0.5) * 0.02;
+
+      response = await mockApi(() => {
+        const price = +(base * drift).toFixed(2);
+        return {
+          symbol,
+          price,
+          change: +(price - previous).toFixed(2),
+          changePct: +(((price - previous) / previous) * 100).toFixed(2),
+        };
+      });
+    }
+  } else {
+    // Use mock data (original behavior)
+    const base = BASE_QUOTES[symbol] ?? 100;
+    const previous = cached?.value.price ?? base;
+    const drift = 1 + (Math.random() - 0.5) * 0.02;
+
+    response = await mockApi(() => {
+      const price = +(base * drift).toFixed(2);
+      return {
+        symbol,
+        price,
+        change: +(price - previous).toFixed(2),
+        changePct: +(((price - previous) / previous) * 100).toFixed(2),
+      };
+    });
+  }
 
   stockCache.set(symbol, { value: response, timestamp: now });
   latestQuotes[symbol] = response.price;
