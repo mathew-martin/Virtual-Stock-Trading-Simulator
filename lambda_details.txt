@@ -1,0 +1,8 @@
+Key                 StockDataFetcherFunctionArn                                                 
+Description         Lambda Function ARN - Share this with Matthew for API Gateway integration   
+Value               arn:aws:lambda:us-east-1:725726881036:function:stock-data-fetcher-dev       
+
+Key                 StockDataFetcherRoleArn                                                     
+Description         Lambda IAM Role ARN - May be needed for permissions troubleshooting         
+Value               arn:aws:iam::725726881036:role/sam-app-StockDataFetcherFunctionRole-        
+GsKRZzwqyL0R
